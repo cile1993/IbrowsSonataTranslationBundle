@@ -30,7 +30,8 @@ class TranslationCRUDController extends CRUDController
      * @throws AccessDeniedException If access is not granted
      * @throws AccessDeniedException If access is not granted
      */
-    public function editAction($id = null, Request $request = null)
+    public function editAction($id = null, Request $request = null): Response
+    //public function editAction($id = null, Request $request = null)
     {
         if (!$request) {
             $request = $this->getRequest();
