@@ -1,10 +1,6 @@
 <?php
 
-
-
 namespace Ibrows\SonataTranslationBundle\Admin;
-
-
 
 use Doctrine\ORM\EntityManagerInterface;
 use Sonata\AdminBundle\Datagrid\DatagridInterface;
@@ -20,34 +16,17 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 abstract class TranslationAdmin extends AbstractAdmin
 {
-    /**
-     * @var TransUnitManagerInterface
-     */
-    protected $transUnitManager;
-    /**
-     * @var array
-     */
-    protected $editableOptions;
+    protected TransUnitManagerInterface $transUnitManager;
 
-    /**
-     * @var array
-     */
-    protected $defaultSelections = array();
+    protected array $editableOptions;
 
-    /**
-     * @var array
-     */
-    protected $emptyFieldPrefixes = array();
+    protected array $defaultSelections = array();
 
-    /**
-     * @var array
-     */
-    protected $filterLocales = array();
+    protected array $emptyFieldPrefixes = array();
 
-    /**
-     * @var array
-     */
-    protected $managedLocales = array();
+    protected array $filterLocales = array();
+
+    protected array $managedLocales = array();
 
     protected EntityManagerInterface $em;
 
@@ -60,25 +39,16 @@ abstract class TranslationAdmin extends AbstractAdmin
         parent::__construct($code, $class, $baseControllerName);
     }
 
-    /**
-     * @param array $options
-     */
     public function setEditableOptions(array $options)
     {
         $this->editableOptions = $options;
     }
 
-    /**
-     * @param TransUnitManagerInterface $translationManager
-     */
     public function setTransUnitManager(TransUnitManagerInterface $translationManager)
     {
         $this->transUnitManager = $translationManager;
     }
 
-    /**
-     * @param array $managedLocales
-     */
     public function setManagedLocales(array $managedLocales)
     {
         $this->managedLocales = $managedLocales;
@@ -100,8 +70,6 @@ abstract class TranslationAdmin extends AbstractAdmin
         return $this->defaultSelections;
     }
 
-
-
     /**
      * @param array $selections
      */
@@ -109,8 +77,6 @@ abstract class TranslationAdmin extends AbstractAdmin
     {
         $this->defaultSelections = $selections;
     }
-
-
 
     /**
      * @param array $prefixes
@@ -120,28 +86,24 @@ abstract class TranslationAdmin extends AbstractAdmin
         $this->emptyFieldPrefixes = $prefixes;
     }
 
-
-
-    /**
-     * @return array
-     */
-    public function getFilterParameters()
-    {
-        $this->datagridValues = array_merge(
-            array(
-                'domain' => array(
-                    'value' => $this->getDefaultDomain(),
-                ),
-            ),
-            $this->datagridValues
-        );
-
-
-
-        return parent::getFilterParameters();
-    }
-
-
+//    /**
+//     * @return array
+//     */
+//    public function getFilterParameters()
+//    {
+//        $this->datagridValues = array_merge(
+//            array(
+//                'domain' => array(
+//                    'value' => $this->getDefaultDomain(),
+//                ),
+//            ),
+//            $this->datagridValues
+//        );
+//
+//
+//
+//        return parent::getFilterParameters();
+//    }
 
     /**
      * @param unknown $name
@@ -154,18 +116,12 @@ abstract class TranslationAdmin extends AbstractAdmin
             return 'IbrowsSonataTranslationBundle::translation_layout.html.twig';
         }
 
-
-
         if ($name === 'list') {
             return 'IbrowsSonataTranslationBundle:CRUD:list.html.twig';
         }
 
-
-
         return parent::getTemplate($name);
     }
-
-
 
     /**
      * @param string $name
@@ -177,39 +133,27 @@ abstract class TranslationAdmin extends AbstractAdmin
         return parent::getTemplate($name);
     }
 
-
-
     /**
      * @param RouteCollection $collection
      */
     protected function configureRoutes(RouteCollectionInterface $collection): void
-
-
-
     {
         $collection
             ->add('clear_cache')
             ->add('create_trans_unit');
     }
 
-
-
     /**
      * @param ListMapper $list
      */
     protected function configureListFields(ListMapper $list): void
     {
-        // https://stackoverflow.com/questions/21615374/how-do-i-check-for-the-existence-of-a-bundle-in-twig
         $isEntity = !$this->em->getMetadataFactory()->isTransient('OnePx\BaseBundle\Entity\I18N\LexikHelper');
-
-
 
         $list
             ->add('id', 'integer')
-            ->add('key', 'string')
-            ->add('domain', 'string');
-
-
+            ->add('transUnit.key', 'string')
+            ->add('transUnit.domain', 'string');
 
         if ($isEntity == true) {
             $list->add(
@@ -223,11 +167,7 @@ abstract class TranslationAdmin extends AbstractAdmin
             );
         }
 
-
-
         $localesToShow = count($this->filterLocales) > 0 ? $this->filterLocales : $this->managedLocales;
-
-
 
         foreach ($localesToShow as $locale) {
             $fieldDescription = $this->getModelManager()->getNewFieldDescriptionInstance($this->getClass(), $locale);
@@ -240,8 +180,6 @@ abstract class TranslationAdmin extends AbstractAdmin
         }
     }
 
-
-
     /**
      * @param FormMapper $form
      */
@@ -249,20 +187,14 @@ abstract class TranslationAdmin extends AbstractAdmin
     {
         $subject = $this->getSubject();
 
-
-
         if (null === $subject->getId()) {
             $subject->setDomain($this->getDefaultDomain());
         }
-
-
 
         $form
             ->add('key', TextType::class)
             ->add('domain', TextType::class);
     }
-
-
 
     /**
      * @return string
@@ -271,8 +203,6 @@ abstract class TranslationAdmin extends AbstractAdmin
     {
         return $this->parameterBag->get('ibrows_sonata_translation.defaultDomain');
     }
-
-
 
     /**
      * {@inheritdoc}

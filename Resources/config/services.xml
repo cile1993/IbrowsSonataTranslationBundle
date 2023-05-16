@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-
-
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
@@ -10,11 +7,11 @@
         <!-- ORM -->
         <service id="ibrows_sonata_translation.admin.orm"
                  class="Ibrows\SonataTranslationBundle\Admin\ORMTranslationAdmin">
-            <tag name="sonata.admin" manager_type="orm" group="group.translation"
+            <tag name="sonata.admin" manager_type="orm" group="admin.events.groupname"
                  label_catalogue="IbrowsSonataTranslationBundle" label="translation.title"/>
             <argument/>
             <argument>Lexik\Bundle\TranslationBundle\Entity\TransUnit</argument>
-            <argument>IbrowsSonataTranslationBundle:TranslationCRUD</argument>
+            <argument>ibrows_sonata_translation.controller.translation_crud</argument>
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="parameter_bag" />
             <call method="setEditableOptions">
@@ -37,5 +34,10 @@
             </call>
         </service>
 
+        <!-- Controller -->
+        <service id="ibrows_sonata_translation.controller.translation_crud" class="Ibrows\SonataTranslationBundle\Controller\TranslationCRUDController" public="true">
+            <tag name="controller.service_arguments"/>
+            <tag name="container.service_subscriber"/>
+        </service>
     </services>
 </container>
