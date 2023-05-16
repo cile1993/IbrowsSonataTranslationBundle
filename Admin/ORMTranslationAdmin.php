@@ -6,6 +6,8 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\DoctrineORMAdminBundle\Datagrid\ProxyQuery;
+use Sonata\DoctrineORMAdminBundle\Filter\CallbackFilter;
+use Sonata\DoctrineORMAdminBundle\Filter\ChoiceFilter;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -14,14 +16,11 @@ class ORMTranslationAdmin extends TranslationAdmin
 {
     protected function configureDatagridFilters(DatagridMapper $filter): void
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getContainer()->get('doctrine')->getManagerForClass('Lexik\Bundle\TranslationBundle\Entity\File');
-
         $domains = array();
-        $domainsQueryResult = $em->createQueryBuilder()
-                                 ->select('DISTINCT t.domain')->from('\Lexik\Bundle\TranslationBundle\Entity\File', 't')
-                                 ->getQuery()
-                                 ->getResult(Query::HYDRATE_ARRAY);
+        $domainsQueryResult = $this->em->createQueryBuilder()
+            ->select('DISTINCT t.domain')->from('\Lexik\Bundle\TranslationBundle\Entity\File', 't')
+            ->getQuery()
+            ->getResult(Query::HYDRATE_ARRAY);
 
         array_walk_recursive(
             $domainsQueryResult,
@@ -34,7 +33,7 @@ class ORMTranslationAdmin extends TranslationAdmin
         $filter
             ->add(
                 'locale',
-                'doctrine_orm_callback',
+                CallbackFilter::class,
                 array(
                     'callback'      => function (ProxyQuery $queryBuilder, $alias, $field, $options) {
                         /* @var $queryBuilder \Doctrine\ORM\QueryBuilder */
@@ -55,7 +54,7 @@ class ORMTranslationAdmin extends TranslationAdmin
             )
             ->add(
                 'show_non_translated_only',
-                'doctrine_orm_callback',
+                CallbackFilter::class,
                 array(
                     'callback'      => function (ProxyQuery $queryBuilder, $alias, $field, $options) {
                         /* @var $queryBuilder \Doctrine\ORM\QueryBuilder */
@@ -89,12 +88,12 @@ class ORMTranslationAdmin extends TranslationAdmin
                     'show_filter' => true,
                 )
             )
-            ->add('key', 'doctrine_orm_string', array(
+            ->add('key', ChoiceFilter::class, array(
                 'show_filter' => true,
             ))
             ->add(
                 'domain',
-                'doctrine_orm_choice',
+                ChoiceFilter::class,
                 array(
                     'field_options' => array(
                         'choices'     => $domains,
@@ -108,7 +107,7 @@ class ORMTranslationAdmin extends TranslationAdmin
             )
             ->add(
                 'content',
-                'doctrine_orm_callback',
+                CallbackFilter::class,
                 array(
                     'callback'   => function (ProxyQuery $queryBuilder, $alias, $field, $options) {
                         /* @var $queryBuilder \Doctrine\ORM\QueryBuilder */

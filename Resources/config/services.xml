@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+
+
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
@@ -13,6 +15,8 @@
             <argument/>
             <argument>Lexik\Bundle\TranslationBundle\Entity\TransUnit</argument>
             <argument>IbrowsSonataTranslationBundle:TranslationCRUD</argument>
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="parameter_bag" />
             <call method="setEditableOptions">
                 <argument>%ibrows_sonata_translation.editable%</argument>
             </call>
@@ -32,7 +36,6 @@
                 <argument>%ibrows_sonata_translation.emptyPrefixes%</argument>
             </call>
         </service>
-
 
     </services>
 </container>

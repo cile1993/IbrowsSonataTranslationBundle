@@ -1,7 +1,13 @@
 <?php
 
+
+
 namespace Ibrows\SonataTranslationBundle\Admin;
 
+
+
+use Doctrine\ORM\EntityManagerInterface;
+use Sonata\AdminBundle\Datagrid\DatagridInterface;
 use Sonata\AdminBundle\Route\RouteCollectionInterface;
 use Lexik\Bundle\TranslationBundle\Manager\TransUnitManagerInterface;
 use Sonata\AdminBundle\Model\ModelManagerInterface;
@@ -9,6 +15,7 @@ use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 abstract class TranslationAdmin extends AbstractAdmin
@@ -41,6 +48,17 @@ abstract class TranslationAdmin extends AbstractAdmin
      * @var array
      */
     protected $managedLocales = array();
+
+    protected EntityManagerInterface $em;
+
+    protected ParameterBagInterface $parameterBag;
+
+    public function __construct(?string $code = null, ?string $class = null, ?string $baseControllerName = null, EntityManagerInterface $em, ParameterBagInterface $parameterBag)
+    {
+        $this->em = $em;
+        $this->parameterBag = $parameterBag;
+        parent::__construct($code, $class, $baseControllerName);
+    }
 
     /**
      * @param array $options
@@ -82,6 +100,8 @@ abstract class TranslationAdmin extends AbstractAdmin
         return $this->defaultSelections;
     }
 
+
+
     /**
      * @param array $selections
      */
@@ -89,6 +109,8 @@ abstract class TranslationAdmin extends AbstractAdmin
     {
         $this->defaultSelections = $selections;
     }
+
+
 
     /**
      * @param array $prefixes
@@ -98,22 +120,28 @@ abstract class TranslationAdmin extends AbstractAdmin
         $this->emptyFieldPrefixes = $prefixes;
     }
 
+
+
     /**
      * @return array
      */
-    // public function getFilterParameters()
-    // {
-    //     $this->datagridValues = array_merge(
-    //         array(
-    //             'domain' => array(
-    //                 'value' => $this->getDefaultDomain(),
-    //             ),
-    //         ),
-    //         $this->datagridValues
-    //     );
+    public function getFilterParameters()
+    {
+        $this->datagridValues = array_merge(
+            array(
+                'domain' => array(
+                    'value' => $this->getDefaultDomain(),
+                ),
+            ),
+            $this->datagridValues
+        );
 
-    //     return parent::getFilterParameters();
-    // }
+
+
+        return parent::getFilterParameters();
+    }
+
+
 
     /**
      * @param unknown $name
@@ -126,12 +154,18 @@ abstract class TranslationAdmin extends AbstractAdmin
             return 'IbrowsSonataTranslationBundle::translation_layout.html.twig';
         }
 
+
+
         if ($name === 'list') {
             return 'IbrowsSonataTranslationBundle:CRUD:list.html.twig';
         }
 
+
+
         return parent::getTemplate($name);
     }
+
+
 
     /**
      * @param string $name
@@ -143,10 +177,14 @@ abstract class TranslationAdmin extends AbstractAdmin
         return parent::getTemplate($name);
     }
 
+
+
     /**
      * @param RouteCollection $collection
      */
     protected function configureRoutes(RouteCollectionInterface $collection): void
+
+
 
     {
         $collection
@@ -154,21 +192,24 @@ abstract class TranslationAdmin extends AbstractAdmin
             ->add('create_trans_unit');
     }
 
+
+
     /**
      * @param ListMapper $list
      */
     protected function configureListFields(ListMapper $list): void
     {
-        // check if in opbundle for more information.
-        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
-
         // https://stackoverflow.com/questions/21615374/how-do-i-check-for-the-existence-of-a-bundle-in-twig
-        $isEntity = !$em->getMetadataFactory()->isTransient('OnePx\BaseBundle\Entity\I18N\LexikHelper');
+        $isEntity = !$this->em->getMetadataFactory()->isTransient('OnePx\BaseBundle\Entity\I18N\LexikHelper');
+
+
 
         $list
             ->add('id', 'integer')
             ->add('key', 'string')
             ->add('domain', 'string');
+
+
 
         if ($isEntity == true) {
             $list->add(
@@ -182,10 +223,14 @@ abstract class TranslationAdmin extends AbstractAdmin
             );
         }
 
+
+
         $localesToShow = count($this->filterLocales) > 0 ? $this->filterLocales : $this->managedLocales;
 
+
+
         foreach ($localesToShow as $locale) {
-            $fieldDescription = $this->modelManager->getNewFieldDescriptionInstance($this->getClass(), $locale);
+            $fieldDescription = $this->getModelManager()->getNewFieldDescriptionInstance($this->getClass(), $locale);
             $fieldDescription->setTemplate(
                 'IbrowsSonataTranslationBundle:CRUD:base_inline_translation_field.html.twig'
             );
@@ -195,24 +240,7 @@ abstract class TranslationAdmin extends AbstractAdmin
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function buildDatagrid()
-    {
-        if ($this->datagrid) {
-            return;
-        }
 
-        $filterParameters = $this->getFilterParameters();
-
-        // transform _sort_by from a string to a FieldDescriptionInterface for the datagrid.
-        if (isset($filterParameters['locale']) && is_array($filterParameters['locale'])) {
-            $this->filterLocales = array_key_exists('value', $filterParameters['locale']) ? $filterParameters['locale']['value'] : $this->managedLocales;
-        }
-
-        parent::buildDatagrid();
-    }
 
     /**
      * @param FormMapper $form
@@ -221,42 +249,36 @@ abstract class TranslationAdmin extends AbstractAdmin
     {
         $subject = $this->getSubject();
 
+
+
         if (null === $subject->getId()) {
             $subject->setDomain($this->getDefaultDomain());
         }
+
+
 
         $form
             ->add('key', TextType::class)
             ->add('domain', TextType::class);
     }
 
-    /**
-     * @return ContainerInterface
-     */
-    protected function getContainer()
-    {
-        return $this->getConfigurationPool()->getContainer();
-    }
+
 
     /**
      * @return string
      */
     protected function getDefaultDomain()
     {
-        return $this->getContainer()->getParameter('ibrows_sonata_translation.defaultDomain');
+        return $this->parameterBag->get('ibrows_sonata_translation.defaultDomain');
     }
+
+
 
     /**
      * {@inheritdoc}
      */
-   protected function configureBatchActions(array $actions): array
+    protected function configureBatchActions(array $actions): array
     {
-        $actions = parent::getBatchActions();
-        $actions['download'] = array(
-            'label'            => $this->trans($this->getLabelTranslatorStrategy()->getLabel('download', 'batch', 'IbrowsSonataTranslationBundle')),
-            'ask_confirmation' => false,
-        );
-
         return $actions;
     }
 }
