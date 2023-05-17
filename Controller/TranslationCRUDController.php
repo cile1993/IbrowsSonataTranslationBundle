@@ -30,13 +30,13 @@ class TranslationCRUDController extends CRUDController
      * @throws AccessDeniedException If access is not granted
      * @throws AccessDeniedException If access is not granted
      */
-    public function editTranslationUnitAction($id = null, Request $request = null): Response
+    public function editAction($id = null, Request $request = null): Response
     {
         if (!$request) {
             $request = $this->getRequest();
         }
         if (!$request->isMethod('POST')) {
-            return $this->redirect($this->admin->generateUrl('list'));
+            return $this->redirect($this->admin->generateUrl('listAction'));
         }
 
         /* @var $transUnit \Lexik\Bundle\TranslationBundle\Model\TransUnit */
@@ -156,7 +156,7 @@ class TranslationCRUDController extends CRUDController
         $session = $this->get('session');
         $session->getFlashBag()->set('sonata_flash_success', 'translations.cache_removed');
 
-        return $this->redirect($this->admin->generateUrl('list'));
+        return $this->redirect($this->admin->generateUrl('listAction'));
     }
 
     /**

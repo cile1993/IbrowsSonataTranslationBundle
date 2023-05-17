@@ -152,8 +152,8 @@ abstract class TranslationAdmin extends AbstractAdmin
 
         $list
             ->add('id', 'integer')
-            ->add('transUnit.key', 'string')
-            ->add('transUnit.domain', 'string');
+            ->add('key', 'string')
+            ->add('domain', 'string');
 
         if ($isEntity == true) {
             $list->add(
@@ -170,13 +170,19 @@ abstract class TranslationAdmin extends AbstractAdmin
         $localesToShow = count($this->filterLocales) > 0 ? $this->filterLocales : $this->managedLocales;
 
         foreach ($localesToShow as $locale) {
-            $fieldDescription = $this->getModelManager()->getNewFieldDescriptionInstance($this->getClass(), $locale);
-            $fieldDescription->setTemplate(
-                'IbrowsSonataTranslationBundle:CRUD:base_inline_translation_field.html.twig'
-            );
-            $fieldDescription->setOption('locale', $locale);
-            $fieldDescription->setOption('editable', $this->editableOptions);
-            $list->add($fieldDescription);
+//            $fieldDescription = $this->getFieldDescriptionFactory()->create($this->getClass(), $locale, []);
+//            $fieldDescription->setTemplate(
+//                'IbrowsSonataTranslationBundle:CRUD:base_inline_translation_field.html.twig'
+//            );
+//            $fieldDescription->setOption('locale', $locale);
+//            $fieldDescription->setOption('editable', $this->editableOptions);
+//            $list->add($fieldDescription);
+
+            $list->add($locale, null, [
+                'template' => '@IbrowsSonataTranslationBundle/CRUD/base_inline_translation_field.html.twig',
+                'locale' => $locale,
+                'editable' => $this->editableOptions,
+            ]);
         }
     }
 
